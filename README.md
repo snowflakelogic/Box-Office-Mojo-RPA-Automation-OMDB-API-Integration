@@ -58,23 +58,6 @@ pip install pandas requests openpyxl
 ### API Requirements
 - **OMDB API Key**: Register at [OMDB API](http://www.omdbapi.com/) for movie metadata access
 
-## 📁 Project Structure
-
-```
-BoxOfficeMojo_RPA_API/
-├── Main.xaml                 # Main UiPath RPA workflow
-├── Data/
-│   ├── MOJO_ALL.csv         # Raw extracted data
-│   ├── processed_data.csv   # API-enriched and cleaned data
-├── Scripts/
-│   ├── INTEGRATING_MOJO_DATA_OMDB_API.ipynb # Jupyter notebook for API integration
-│   ├── omdb_integration.py      # Standalone Python script for OMDB API
-├── Config/
-│   ├── config.json              # API keys and automation settings
-├── Screenshots/             # Workflow documentation
-└── README.md               # This file
-```
-
 ## 🔧 Complete Workflow Process
 
 ### Phase 1: RPA Automation
