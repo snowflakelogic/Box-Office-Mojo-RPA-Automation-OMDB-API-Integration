@@ -25,10 +25,10 @@ This RPA solution automates the complete data pipeline for movie analytics:
 - **Error Handling**: Robust exception handling and retry mechanisms
 
 ### Advanced API Integration
-- **OMDB API Integration**: Real-time movie metadata enrichment
-- **Rate Limiting Management**: Intelligent request throttling and optimization
-- **Data Validation**: API response validation and error handling
-- **Batch Processing**: Efficient handling of multiple API requests
+- **OMDB API Integration**: Real-time movie genre enrichment
+- **Rate Limiting Management**: Intelligent request throttling (0.5s delays)
+- **Error Handling**: Robust API response validation with fallback values
+- **Batch Processing**: Efficient handling of unique movie titles to avoid duplicate requests
 
 ### Automated Data Processing
 - **Date Standardization**: Automated date format conversion (YYYY-MM-DD)
@@ -52,7 +52,7 @@ This RPA solution automates the complete data pipeline for movie analytics:
 
 ### Python Dependencies
 ```python
-pip install pandas numpy requests tqdm
+pip install pandas requests openpyxl
 ```
 
 ### API Requirements
@@ -67,10 +67,10 @@ BoxOfficeMojo_RPA_API/
 │   ├── MOJO_ALL.csv         # Raw extracted data
 │   ├── processed_data.csv   # API-enriched and cleaned data
 ├── Scripts/
-│   ├── data_preprocessing.py # Data cleaning and OMDB integration
-│   ├── omdb_api.py          # OMDB API handler and utilities
+│   ├── INTEGRATING_MOJO_DATA_OMDB_API.ipynb # Jupyter notebook for API integration
+│   ├── omdb_integration.py      # Standalone Python script for OMDB API
 ├── Config/
-│   ├── config.json          # API keys and automation settings
+│   ├── config.json              # API keys and automation settings
 ├── Screenshots/             # Workflow documentation
 └── README.md               # This file
 ```
@@ -90,9 +90,17 @@ BoxOfficeMojo_RPA_API/
 
 ### Phase 3: OMDB API Integration
 1. **API Configuration** - Set up OMDB API credentials and rate limiting
-2. **Metadata Extraction** - Automated movie data enrichment:
+2. **Genre Extraction** - Automated movie genre enrichment:
    ```python
-   df[['OMDB_Runtime', 'OMDB_Genre', 'OMDB_imdbID', 'OMDB_Budget']] = df['#1 Release'].progress_apply(fetch_omdb_data)
+   # Function to fetch genre using OMDb API
+   def get_genre(title):
+       url = f"http://www.omdbapi.com/?t={title}&apikey={API_KEY}"
+       response = requests.get(url)
+       data = response.json()
+       return data.get('Genre', 'Not found')
+   
+   # Map genres to dataframe
+   df['Genre'] = df['#1 Release'].map(lambda x: genre_lookup.get(str(x).strip(), 'Not found'))
    ```
 3. **Data Merging** - Intelligent integration of API responses with scraped data
 
@@ -140,14 +148,18 @@ pip install pandas numpy requests tqdm
    - Load `Main.xaml` workflow
    - Execute data extraction process
 
-2. **Run Data Processing**:
+2. **Run API Integration**:
    ```bash
-   python Scripts/data_preprocessing.py
+   # Using Jupyter Notebook
+   jupyter notebook Scripts/INTEGRATING_MOJO_DATA_OMDB_API.ipynb
+   
+   # Or run as Python script
+   python Scripts/omdb_integration.py
    ```
 
 3. **Verify Output**:
-   - Check `processed_data.csv` for enriched dataset
-   - Validate data quality and completeness
+   - Check `updated_with_genres.xlsx` for genre-enriched dataset
+   - Validate API response quality and data completeness
 
 ### Automated Execution
 1. Create batch script combining RPA and Python processing
@@ -165,10 +177,8 @@ The processed dataset includes:
 - Country-specific data
 
 #### OMDB Enriched Data
-- **OMDB_Runtime**: Movie duration in minutes
-- **OMDB_Genre**: Movie genres (comma-separated)
-- **OMDB_imdbID**: IMDb identifier for cross-referencing
-- **OMDB_Budget**: Production budget information
+- **Genre**: Movie genres (comma-separated) from OMDB API
+- **API Status**: Success/failure indicators for API calls
 
 #### Processed Fields
 - **Standardized Dates**: YYYY-MM-DD format
@@ -177,8 +187,8 @@ The processed dataset includes:
 
 ### File Outputs
 - **Raw Data**: `Data/MOJO_ALL.csv`
-- **Processed Data**: `Data/processed_data.csv`
-- **Processing Log**: `Data/processing_log.txt`
+- **Genre-Enriched Data**: `updated_with_genres.xlsx`
+- **Processing Log**: Console output with API call results
 
 ## 🔍 Troubleshooting
 
@@ -193,14 +203,16 @@ The processed dataset includes:
 
 ### API Issues
 **OMDB API Errors**
-- Verify API key validity
+- Verify API key validity and format
 - Check rate limiting (1000 requests/day for free tier)
-- Implement retry mechanisms for failed requests
+- Handle "Not found" responses for obscure movie titles
+- Monitor API response format changes
 
 **Data Processing Errors**
-- Check Python dependencies
-- Verify data format consistency
-- Review error logs for specific issues
+- Check pandas and requests library compatibility
+- Verify CSV file encoding and format
+- Review unique movie title extraction
+- Handle special characters in movie titles
 
 ### Performance Optimization
 - Implement caching for OMDB requests
@@ -210,18 +222,18 @@ The processed dataset includes:
 ## 📈 Applications & Use Cases
 
 ### Data Science & Analytics
-The processed dataset enables:
-- **Movie Performance Analysis**: Revenue trends and market insights
-- **Genre Analysis**: Performance patterns across different movie categories
-- **Budget ROI Studies**: Cost vs. revenue analysis using OMDB budget data
-- **Market Research**: Geographic and temporal box office patterns
-- **Predictive Modeling**: Features for machine learning applications
+The genre-enriched dataset enables:
+- **Genre Performance Analysis**: Revenue trends across different movie categories
+- **Market Segmentation**: Understanding audience preferences by genre
+- **Content Strategy**: Genre-based decision making for distributors
+- **Competitive Analysis**: Genre performance across different markets
+- **Predictive Modeling**: Genre as a feature for box office prediction models
 
 ### Business Intelligence
-- **Market Intelligence**: Competitive analysis and industry insights
-- **Investment Decisions**: Data-driven movie financing decisions
-- **Distribution Strategy**: Geographic performance optimization
-- **Content Strategy**: Genre and runtime impact analysis
+- **Market Intelligence**: Genre-based competitive analysis and industry insights
+- **Content Acquisition**: Data-driven genre selection for distributors
+- **Release Strategy**: Genre performance optimization across regions
+- **Investment Decisions**: Genre-focused portfolio analysis
 
 ## 🔄 Maintenance & Updates
 
@@ -280,5 +292,4 @@ This project is for educational and research purposes. Ensure compliance with:
 
 **Maintained by**: snowflakelogic  
 **Last Updated**: June 2025  
-**Version**: 2.0 - RPA & API Integration Focused  
 **Focus**: Automated Data Extraction & API Integration Pipeline
